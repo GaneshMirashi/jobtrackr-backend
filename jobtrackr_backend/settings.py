@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     # third-party
     'rest_framework',
     'corsheaders',
+    'django_filters',
+    'rest_framework_simplejwt.token_blacklist',
 
     # local apps
     'accounts',
@@ -56,9 +58,7 @@ INSTALLED_APPS = [
     'resume',
     'reminders',
 ]
-INSTALLED_APPS += [
-    'rest_framework_simplejwt.token_blacklist',
-]
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -106,7 +106,14 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend"
+    ],
 }
+
+REST_FRAMEWORK.update({
+    "DEFAULT_PAGINATION_CLASS": "core.pagination.StandardResultsSetPagination",
+})
 
 # Custom user model
 AUTH_USER_MODEL = 'accounts.User'
