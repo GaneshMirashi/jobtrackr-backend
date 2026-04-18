@@ -1,0 +1,15 @@
+from django.contrib.auth.backends import ModelBackend
+from .models import User
+
+# Custom authentication backend to allow login with email instead of username
+class EmailBackend(ModelBackend):
+    def authenticate(self, request, email=None, password=None, **kwargs):
+        try:
+            user = User.objects.get(email=email)
+
+            if user.check_password(password):
+                return user
+        except User.DoesNotExist:
+            return None
+
+        return None

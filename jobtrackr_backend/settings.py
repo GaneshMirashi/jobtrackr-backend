@@ -56,6 +56,9 @@ INSTALLED_APPS = [
     'resume',
     'reminders',
 ]
+INSTALLED_APPS += [
+    'rest_framework_simplejwt.token_blacklist',
+]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -98,7 +101,26 @@ DATABASES = {
     }
 }
 
+# Password validation
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+# Custom user model
 AUTH_USER_MODEL = 'accounts.User'
+
+# JWT settings
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailBackend',
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
