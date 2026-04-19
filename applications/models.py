@@ -15,7 +15,7 @@ class JobApplication(models.Model):
 
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-
+    position = models.IntegerField(default=0)
     company_name = models.CharField(max_length=255)
     job_title = models.CharField(max_length=255)
     job_url = models.URLField(blank=True, null=True)
@@ -37,7 +37,7 @@ class JobApplication(models.Model):
 
     class Meta:
         db_table = "job_applications"
-        ordering = ["-created_at"]
+        ordering = ["-created_at", "position"]
 
     def __str__(self):
         return f"{self.company_name} - {self.job_title}"
