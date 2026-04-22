@@ -1,3 +1,5 @@
+from urllib import request
+
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
@@ -8,6 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Count
 from collections import defaultdict
+from django.db.models import Q
 
 
 class JobApplicationViewSet(ModelViewSet):
@@ -22,6 +25,17 @@ class JobApplicationViewSet(ModelViewSet):
 
     def get_queryset(self):
         queryset = JobApplication.objects.filter(user=self.request.user)
+        search = self.request.query_params.get("search")
+        status = self.request.query_params.get("status")
+
+        if search:
+            queryset = queryset.filter(
+                Q(company_name__icontains=search) |
+                Q(job_title__icontains=search)
+            )
+
+        if status:
+            queryset = queryset.filter(status=status)
 
         # 📅 Date range filtering
         start_date = self.request.query_params.get("start_date")
@@ -94,14 +108,16 @@ class JobApplicationViewSet(ModelViewSet):
     def kanban(self, request):
         queryset = self.get_queryset().order_by("position")
 
-        grouped = defaultdict(list)
+        statuses = dict(JobApplication.STATUS_CHOICES).keys()
+
+        data = {status: [] for status in statuses}
 
         for app in queryset:
-            grouped[app.status].append(JobApplicationSerializer(app).data)
+            data[app.status].append(JobApplicationSerializer(app).data)
 
         return Response({
             "success": True,
-            "data": grouped,
+            "data": data,
             "message": "Kanban data fetched"
         })
     
@@ -120,32 +136,52 @@ class JobApplicationViewSet(ModelViewSet):
                 "message": "Invalid status"
             }, status=400)
 
-        application.status = new_status
-        application.position = new_position
-        application.save()
+        if new_position is None:
+            return Response({
+                "success": False,
+                "message": "Position is required"
+            }, status=400)
+
+        # Get all apps in target column
+        apps = JobApplication.objects.filter(
+            user=request.user,
+            status=new_status
+        ).order_by("position")
+
+        # Insert into correct position
+        apps = list(apps)
+        apps.insert(new_position, application)
+
+        # Reassign positions cleanly
+        for index, app in enumerate(apps):
+            app.status = new_status
+            app.position = index
+            app.save()
 
         return Response({
             "success": True,
             "data": JobApplicationSerializer(application).data,
             "message": "Application moved successfully"
         })
-    
 
     # ✅ Custom endpoint for bulk reordering within the same status
     @action(detail=False, methods=["patch"])
     def reorder(self, request):
-        data = request.data  # list of objects
+        data = request.data
+
+        apps_map = {
+            app.id: app
+            for app in JobApplication.objects.filter(user=request.user)
+        }
 
         for item in data:
-            try:
-                app = JobApplication.objects.get(id=item["id"], user=request.user)
+            app = apps_map.get(item["id"])
+            if app:
                 app.position = item["position"]
-                app.save()
-            except JobApplication.DoesNotExist:
-                continue
+
+        JobApplication.objects.bulk_update(apps_map.values(), ["position"])
 
         return Response({
             "success": True,
-            "data": {},
             "message": "Reordered successfully"
         })
