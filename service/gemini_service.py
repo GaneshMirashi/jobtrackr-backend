@@ -8,12 +8,14 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 
 def analyze_resume(text):
     prompt = f"""
-    Analyze the following resume and return:
+    Analyze this resume and return STRICT JSON:
 
-    1. Key Skills (bullet points)
-    2. Strengths
-    3. Weaknesses
-    4. Suggestions for improvement
+    {{
+      "skills": [],
+      "strengths": [],
+      "weaknesses": [],
+      "suggestions": []
+    }}
 
     Resume:
     {text}
