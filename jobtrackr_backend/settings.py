@@ -118,6 +118,9 @@ REST_FRAMEWORK.update({
 # Custom user model
 AUTH_USER_MODEL = 'accounts.User'
 
+# gemini config
+GEMINI_API_KEY = env("GEMINI_API_KEY", default=None)
+
 # JWT settings
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
