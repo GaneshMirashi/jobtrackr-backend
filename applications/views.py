@@ -11,6 +11,8 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Count
 from collections import defaultdict
 from django.db.models import Q
+from django.utils.timezone import now
+from datetime import timedelta
 
 
 class JobApplicationViewSet(ModelViewSet):
@@ -184,4 +186,20 @@ class JobApplicationViewSet(ModelViewSet):
         return Response({
             "success": True,
             "message": "Reordered successfully"
+        })
+
+
+    @action(detail=False, methods=["get"])
+    def reminders(self, request):
+        today = now().date()
+        upcoming = today + timedelta(days=7)
+
+        queryset = JobApplication.objects.filter(
+            user=request.user,
+            reminder_date__range=[today, upcoming]
+        )
+
+        return Response({
+            "success": True,
+            "data": JobApplicationSerializer(queryset, many=True).data
         })
