@@ -196,7 +196,7 @@ class JobApplicationViewSet(ModelViewSet):
 
         queryset = JobApplication.objects.filter(
             user=request.user,
-            reminder_date__range=[today, upcoming]
+            follow_up_date__range=[today, upcoming]
         )
 
         return Response({
