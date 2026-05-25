@@ -34,6 +34,23 @@ class JobApplication(models.Model):
     job_description = models.TextField(blank=True)
     notes = models.TextField(blank=True)
 
+    interview_date = models.DateTimeField(blank=True, null=True)
+
+    interview_type = models.CharField(
+        max_length=50,
+        blank=True
+    )
+
+    interviewer_name = models.CharField(
+        max_length=255,
+        blank=True
+    )
+
+    meeting_link = models.URLField(
+        blank=True,
+        null=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
