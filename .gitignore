@@ -1,7 +1,17 @@
+# Environments and Secrets
+.env
+venv/
+env/
+
+# Python / Django Cache and Compiled Files
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Local Database
 db.sqlite3
-.env
-venv/
+
+# OS generated files (optional but helpful)
+.DS_Store
+Thumbs.db
