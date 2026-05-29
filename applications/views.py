@@ -1,10 +1,11 @@
+from email.mime import application
 from urllib import request
 
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import JobApplication
+from .models import ApplicationActivity, JobApplication
 from .serializers import JobApplicationSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -59,6 +60,21 @@ class JobApplicationViewSet(ModelViewSet):
 
         serializer.save(user=user, position=last_position)
 
+        # ✅ Activity
+        ApplicationActivity.objects.create(
+            application=application,
+            action="Application created"
+        )
+
+    # ✅ Log activity on update
+    def perform_update(self, serializer):
+        application = serializer.save()
+
+        ApplicationActivity.objects.create(
+            application=application,
+            action="Application updated"
+        )
+
     # ✅ Custom endpoint for status update (Kanban)
     @action(detail=True, methods=["patch"])
     def status(self, request, pk=None):
@@ -73,6 +89,11 @@ class JobApplicationViewSet(ModelViewSet):
 
         application.status = new_status
         application.save()
+
+        ApplicationActivity.objects.create(
+            application=application,
+            action=f"Status changed to {new_status}"
+        )
 
         return Response({
             "success": True,
@@ -202,4 +223,21 @@ class JobApplicationViewSet(ModelViewSet):
         return Response({
             "success": True,
             "data": JobApplicationSerializer(queryset, many=True).data
+        })
+    
+
+    @action(detail=True, methods=["get"])
+    def activities(self, request, pk=None):
+        application = self.get_object()
+
+        activities = application.activities.all()
+
+        serializer = ApplicationActivitySerializer(
+            activities,
+            many=True
+        )
+
+        return Response({
+            "success": True,
+            "data": serializer.data
         })
