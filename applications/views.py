@@ -1,6 +1,6 @@
 from email.mime import application
 from urllib import request
-
+from django.db.models.functions import TruncMonth
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
@@ -240,4 +240,54 @@ class JobApplicationViewSet(ModelViewSet):
         return Response({
             "success": True,
             "data": serializer.data
+        })
+    
+
+    @action(detail=False, methods=["get"])
+    def analytics(self, request):
+        queryset = JobApplication.objects.filter(
+            user=request.user
+        )
+
+        monthly = (
+            queryset
+            .annotate(month=TruncMonth("applied_date"))
+            .values("month")
+            .annotate(count=Count("id"))
+            .order_by("month")
+        )
+
+        monthly_data = [
+            {
+                "month": item["month"].strftime("%b"),
+                "count": item["count"],
+            }
+            for item in monthly
+        ]
+
+        total = queryset.count()
+
+        offers = queryset.filter(status="OFFER").count()
+
+        success_rate = (
+            round((offers / total) * 100, 2)
+            if total > 0
+            else 0
+        )
+
+        upcoming_interviews = queryset.filter(
+            interview_date__isnull=False
+        ).order_by("interview_date")[:5]
+
+        return Response({
+            "success": True,
+            "data": {
+                "monthly_applications": monthly_data,
+                "success_rate": success_rate,
+                "upcoming_interviews":
+                    JobApplicationSerializer(
+                        upcoming_interviews,
+                        many=True
+                    ).data,
+            }
         })
