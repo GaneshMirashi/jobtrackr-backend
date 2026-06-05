@@ -58,12 +58,17 @@ class JobApplicationViewSet(ModelViewSet):
             status=status_value
         ).count()
 
-        serializer.save(user=user, position=last_position)
+        # SAVE APPLICATION
+        application = serializer.save(
+            user=user,
+            position=last_position
+        )
 
-        # ✅ Activity
+        # CREATE ACTIVITY
         ApplicationActivity.objects.create(
             application=application,
-            action="Application created"
+            action="Application Created",
+            # description=f"Application created for {application.company_name}"
         )
 
     # ✅ Log activity on update
