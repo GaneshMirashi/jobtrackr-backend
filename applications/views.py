@@ -14,6 +14,7 @@ from collections import defaultdict
 from django.db.models import Q
 from django.utils.timezone import now
 from datetime import timedelta
+from rest_framework.decorators import api_view, permission_classes
 
 
 class JobApplicationViewSet(ModelViewSet):
@@ -296,3 +297,47 @@ class JobApplicationViewSet(ModelViewSet):
                     ).data,
             }
         })
+
+
+
+
+
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def calendar_events(request):
+
+    applications = JobApplication.objects.filter(
+        user=request.user
+    )
+
+    events = []
+
+    for app in applications:
+
+        # Interview Date
+        if app.interview_date:
+            events.append({
+                "title": f"{app.company_name} Interview",
+                "date": str(app.interview_date),
+                "color": "#2563eb",
+            })
+
+        # Follow Up
+        if app.follow_up_date:
+            events.append({
+                "title": f"{app.company_name} Follow Up",
+                "date": str(app.follow_up_date),
+                "color": "#f59e0b",
+            })
+
+        # Applied Date
+        if app.applied_date:
+            events.append({
+                "title": f"Applied to {app.company_name}",
+                "date": str(app.applied_date),
+                "color": "#10b981",
+            })
+
+    return Response(events)
