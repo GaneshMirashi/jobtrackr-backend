@@ -14,6 +14,7 @@ from pathlib import Path
 import environ 
 import os
 from datetime import timedelta
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -169,3 +170,40 @@ STATIC_URL = 'static/'
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+
+CELERY_BEAT_SCHEDULE = {
+    "send-interview-reminders": {
+        "task": "applications.tasks.send_interview_reminders",
+
+        "schedule": crontab(
+            hour=9,
+            minute=0,
+        ),
+    },
+}
+# CELERY
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+
+CELERY_ACCEPT_CONTENT = ["json"]
+
+CELERY_TASK_SERIALIZER = "json"
+
+CELERY_RESULT_SERIALIZER = "json"
+
+CELERY_TIMEZONE = "Asia/Kolkata"
+
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "smtp.gmail.com"
+
+EMAIL_PORT = 587
+
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = "your_email@gmail.com"
+
+EMAIL_HOST_PASSWORD = "your_app_password"
