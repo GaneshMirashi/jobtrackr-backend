@@ -15,6 +15,9 @@ from django.db.models import Q
 from django.utils.timezone import now
 from datetime import timedelta
 from rest_framework.decorators import api_view, permission_classes
+import csv
+from django.http import HttpResponse
+
 
 
 class JobApplicationViewSet(ModelViewSet):
@@ -341,3 +344,40 @@ def calendar_events(request):
             })
 
     return Response(events)
+
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def export_applications_csv(request):
+
+    response = HttpResponse(content_type="text/csv")
+
+    response["Content-Disposition"] = (
+        'attachment; filename="applications.csv"'
+    )
+
+    writer = csv.writer(response)
+
+    writer.writerow([
+        "Company",
+        "Job Title",
+        "Status",
+        "Applied Date",
+        "Interview Date",
+    ])
+
+    applications = JobApplication.objects.filter(
+        user=request.user
+    )
+
+    for app in applications:
+        writer.writerow([
+            app.company_name,
+            app.job_title,
+            app.status,
+            app.applied_date,
+            app.interview_date,
+        ])
+
+    return response
