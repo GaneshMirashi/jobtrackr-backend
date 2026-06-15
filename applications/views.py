@@ -381,3 +381,49 @@ def export_applications_csv(request):
         ])
 
     return response
+
+
+
+
+@api_view(["GET"])
+def analytics_view(request):
+
+    queryset = JobApplication.objects.filter(
+        user=request.user
+    )
+
+    monthly = (
+        queryset
+        .annotate(month=TruncMonth("created_at"))
+        .values("month")
+        .annotate(total=Count("id"))
+        .order_by("month")
+    )
+
+    total = queryset.count()
+
+    interviews = queryset.filter(
+        status="INTERVIEW"
+    ).count()
+
+    offers = queryset.filter(
+        status="OFFER"
+    ).count()
+
+    rejected = queryset.filter(
+        status="REJECTED"
+    ).count()
+
+    success_rate = (
+        (offers / total) * 100
+        if total > 0 else 0
+    )
+
+    return Response({
+        "monthly": monthly,
+        "total": total,
+        "interviews": interviews,
+        "offers": offers,
+        "rejected": rejected,
+        "success_rate": round(success_rate, 2),
+    })
