@@ -1,9 +1,10 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path
-from .views import JobApplicationViewSet, analytics_view, calendar_events, export_applications_csv
+from .views import JobApplicationViewSet, NotificationViewSet, analytics_view, calendar_events, export_applications_csv
 
 router = DefaultRouter()
 router.register(r'', JobApplicationViewSet, basename='applications')
+router.register(r'notifications', NotificationViewSet,basename='notifications')
 
 urlpatterns = [
     *router.urls,

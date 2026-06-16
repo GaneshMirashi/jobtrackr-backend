@@ -5,8 +5,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import ApplicationActivity, JobApplication
-from .serializers import JobApplicationSerializer
+from .models import ApplicationActivity, JobApplication, Notification
+from .serializers import JobApplicationSerializer, NotificationSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Count
@@ -73,6 +73,15 @@ class JobApplicationViewSet(ModelViewSet):
             application=application,
             action="Application Created",
             # description=f"Application created for {application.company_name}"
+        )
+
+        # CREATE NOTIFICATION
+        Notification.objects.create(
+            user=user,
+
+            title="Application Added",
+
+            message=f"You applied to {application.company_name}"
         )
 
     # ✅ Log activity on update
@@ -427,3 +436,17 @@ def analytics_view(request):
         "rejected": rejected,
         "success_rate": round(success_rate, 2),
     })
+
+
+
+class NotificationViewSet(ModelViewSet):
+
+    serializer_class = NotificationSerializer
+
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+
+        return Notification.objects.filter(
+            user=self.request.user
+        ).order_by("-created_at")
