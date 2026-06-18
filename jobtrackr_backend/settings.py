@@ -57,6 +57,9 @@ INSTALLED_APPS = [
     'accounts',
     'applications',
     'resume',
+
+    # Celery
+    "django_celery_beat",
 ]
 
 
