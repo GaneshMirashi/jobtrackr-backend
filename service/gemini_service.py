@@ -10,30 +10,38 @@ for m in genai.list_models():
         print(m.name)
 
 model = genai.GenerativeModel("models/gemini-flash-latest")
-# model = genai.GenerativeModel("models/gemini-pro-latest")
 
-def analyze_resume(text):
+def analyze_resume(text, job_role):
     prompt = f"""
-You are a resume analyzer.
+You are an advanced ATS Resume Analyzer AI.
 
-Return ONLY valid JSON. Do not add explanations, text, or markdown.
+Compare the candidate resume with the target job role.
 
-JSON format:
-{{
-  "skills": ["..."],
-  "strengths": ["..."],
-  "weaknesses": ["..."],
-  "suggestions": ["..."]
-}}
-
-Rules:
-- Always return all keys
-- Use short bullet points
-- If something is missing, return empty array []
-- Do NOT wrap in ``` or markdown
+Target Job Role:
+{job_role}
 
 Resume:
 {text}
+
+Return ONLY valid JSON.
+
+JSON format:
+
+{{
+  "match_score": 85,
+  "matching_skills": ["Python", "Django"],
+  "missing_skills": ["Docker", "AWS"],
+  "strengths": ["Good backend experience"],
+  "weaknesses": ["No cloud deployment projects"],
+  "suggestions": ["Add Docker deployment project"],
+  "summary": "Candidate is a strong fit for backend roles."
+}}
+
+Rules:
+- Return only JSON
+- No markdown
+- No explanations
+- Keep points short
 """
 
     response = model.generate_content(prompt)

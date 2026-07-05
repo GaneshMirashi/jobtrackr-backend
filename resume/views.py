@@ -11,8 +11,8 @@ class ResumeAnalyzerView(APIView):
     def post(self, request):
         file = request.FILES.get("file")
         text = request.data.get("text")
+        job_role = request.data.get("job_role")
 
-        # Extract text from PDF
         if file:
             text = extract_text_from_pdf(file)
 
@@ -22,25 +22,24 @@ class ResumeAnalyzerView(APIView):
                     status=400
                 )
 
-        # Validate input
         if not text or not text.strip():
             return Response(
                 {"success": False, "message": "No text provided"},
                 status=400
             )
 
-        # AI analysis
         try:
-            result = analyze_resume(text)
+            result = analyze_resume(text, job_role)
+
         except Exception as e:
             return Response(
                 {"success": False, "message": str(e)},
                 status=500
             )
 
-        # Parse AI response
         try:
             parsed = json.loads(result)
+
         except json.JSONDecodeError:
             parsed = {"raw": result}
 
