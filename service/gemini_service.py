@@ -5,19 +5,15 @@ from django.conf import settings
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
 
-for m in genai.list_models():
-    if "generateContent" in m.supported_generation_methods:
-        print(m.name)
-
 model = genai.GenerativeModel("models/gemini-flash-latest")
 
 def analyze_resume(text, job_role):
     prompt = f"""
-You are an advanced ATS Resume Analyzer AI.
+You are an expert ATS Resume Analyzer.
 
-Compare the candidate resume with the target job role.
+Compare the resume with the target job role.
 
-Target Job Role:
+Job Role:
 {job_role}
 
 Resume:
@@ -25,23 +21,30 @@ Resume:
 
 Return ONLY valid JSON.
 
-JSON format:
-
 {{
-  "match_score": 85,
-  "matching_skills": ["Python", "Django"],
-  "missing_skills": ["Docker", "AWS"],
-  "strengths": ["Good backend experience"],
-  "weaknesses": ["No cloud deployment projects"],
-  "suggestions": ["Add Docker deployment project"],
-  "summary": "Candidate is a strong fit for backend roles."
+  "ats_score": 86,
+  "match_percentage": 84,
+  "skills": [],
+  "missing_skills": [],
+  "strengths": [],
+  "weaknesses": [],
+  "suggestions": [],
+  "summary": "",
+  "keyword_match": {{
+      "matched": [],
+      "missing": []
+  }}
 }}
 
 Rules:
-- Return only JSON
-- No markdown
-- No explanations
-- Keep points short
+
+ATS Score must be between 0-100.
+
+Match Percentage must be between 0-100.
+
+Do not return markdown.
+
+Always return JSON.
 """
 
     response = model.generate_content(prompt)
