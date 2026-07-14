@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import ApplicationActivity, JobApplication, Notification
-from .serializers import JobApplicationSerializer, NotificationSerializer
+from .serializers import JobApplicationSerializer, NotificationSerializer,ApplicationActivitySerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Count
