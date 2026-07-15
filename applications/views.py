@@ -450,3 +450,43 @@ class NotificationViewSet(ModelViewSet):
         return Notification.objects.filter(
             user=self.request.user
         ).order_by("-created_at")
+    
+
+
+
+
+
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from applications.models import JobApplication
+
+
+class CalendarEventsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        applications = JobApplication.objects.filter(
+            user=request.user
+        )
+
+        events = []
+
+        for app in applications:
+
+            if app.interview_date:
+                events.append({
+                    "title": f"{app.company_name} - Interview",
+                    "start": app.interview_date,
+                    "color": "#2563eb",
+                })
+
+            if app.follow_up_date:
+                events.append({
+                    "title": f"{app.company_name} - Follow Up",
+                    "start": app.follow_up_date,
+                    "color": "#f59e0b",
+                })
+
+        return Response(events)
